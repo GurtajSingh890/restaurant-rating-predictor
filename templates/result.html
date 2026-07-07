@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Prediction Result | Bengaluru Restaurant Rating Predictor{% endblock %}
+{% block meta_description %}See the predicted rating for your Bengaluru restaurant based on our Random Forest ML model.{% endblock %}
+
+{% block content %}
+<section class="result-section" id="result-section">
+    <div class="section-container">
+
+        <!-- ─── Rating Card ───────────────────────────────────────────── -->
+        <div class="result-card glass-card fade-in" id="result-card">
+            <div class="result-badge">
+                <i class="fas fa-check-circle"></i> Prediction Complete
+            </div>
+
+            <h1 class="result-heading">Predicted Rating</h1>
+
+            <div class="rating-display" id="rating-display">
+                <div class="rating-circle" style="--rating-percent: {{ star_data.percentage }}%;">
+                    <span class="rating-value">{{ star_data.rating }}</span>
+                    <span class="rating-max">/ 5</span>
+                </div>
+
+                <div class="star-row" id="star-row">
+                    {% for i in range(star_data.full_stars) %}
+                    <i class="fas fa-star star-icon star-filled"></i>
+                    {% endfor %}
+                    {% if star_data.half_star %}
+                    <i class="fas fa-star-half-alt star-icon star-half"></i>
+                    {% endif %}
+                    {% for i in range(star_data.empty_stars) %}
+                    <i class="far fa-star star-icon star-empty"></i>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- ─── Input Summary ─────────────────────────────────────── -->
+            <div class="result-summary" id="result-summary">
+                <h3><i class="fas fa-clipboard-list"></i> Input Summary</h3>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="summary-label"><i class="fas fa-wifi"></i> Online Order</span>
+                        <span class="summary-value">{{ form_data.online_order }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label"><i class="fas fa-calendar-check"></i> Book Table</span>
+                        <span class="summary-value">{{ form_data.book_table }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label"><i class="fas fa-thumbs-up"></i> Votes</span>
+                        <span class="summary-value">{{ form_data.votes }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label"><i class="fas fa-rupee-sign"></i> Cost for Two</span>
+                        <span class="summary-value">₹{{ form_data.cost }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label"><i class="fas fa-map-marker-alt"></i> Location</span>
+                        <span class="summary-value">{{ form_data.location }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label"><i class="fas fa-city"></i> City Area</span>
+                        <span class="summary-value">{{ form_data.city }}</span>
+                    </div>
+                    <div class="summary-item summary-wide">
+                        <span class="summary-label"><i class="fas fa-store"></i> Restaurant Type</span>
+                        <span class="summary-value">{{ form_data.rest_type }}</span>
+                    </div>
+                    <div class="summary-item summary-wide">
+                        <span class="summary-label"><i class="fas fa-utensils"></i> Cuisines</span>
+                        <span class="summary-value">{{ form_data.cuisines }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label"><i class="fas fa-concierge-bell"></i> Service Type</span>
+                        <span class="summary-value">{{ form_data.type }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ─── Actions ───────────────────────────────────────────── -->
+            <div class="result-actions">
+                <a href="{{ url_for('predict') }}" class="btn btn-primary btn-lg" id="btn-predict-again">
+                    <i class="fas fa-redo"></i> Predict Again
+                </a>
+                <a href="{{ url_for('home') }}" class="btn btn-outline btn-lg" id="btn-go-home">
+                    <i class="fas fa-home"></i> Home
+                </a>
+            </div>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

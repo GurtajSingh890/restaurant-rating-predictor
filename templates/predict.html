@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Predict Rating | Bengaluru Restaurant Rating Predictor{% endblock %}
+{% block meta_description %}Enter restaurant details to predict the Zomato rating for a Bengaluru restaurant using our trained Random Forest model.{% endblock %}
+
+{% block content %}
+<section class="predict-section" id="predict-section">
+    <div class="section-container">
+        <div class="section-header fade-in">
+            <span class="section-badge"><i class="fas fa-magic"></i> Prediction Engine</span>
+            <h1 class="section-title">Predict Restaurant Rating</h1>
+            <p class="section-subtitle">
+                Enter the restaurant details below and our ML model will predict the rating.
+            </p>
+        </div>
+
+        <div class="predict-form-wrapper fade-in">
+            <form method="POST" action="{{ url_for('predict') }}" class="predict-form" id="predict-form" novalidate>
+                
+                <!-- ─── Row 1: Binary toggles ─────────────────────────────── -->
+                <div class="form-row">
+                    <div class="form-group" id="group-online-order">
+                        <label for="online_order" class="form-label">
+                            <i class="fas fa-wifi"></i> Online Order
+                        </label>
+                        <div class="toggle-group">
+                            <label class="toggle-option">
+                                <input type="radio" name="online_order" value="Yes"
+                                    {% if form_data and form_data.online_order == 'Yes' %}checked{% endif %}
+                                    required />
+                                <span class="toggle-btn">Yes</span>
+                            </label>
+                            <label class="toggle-option">
+                                <input type="radio" name="online_order" value="No"
+                                    {% if form_data and form_data.online_order == 'No' %}checked{% endif %} />
+                                <span class="toggle-btn">No</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="group-book-table">
+                        <label for="book_table" class="form-label">
+                            <i class="fas fa-calendar-check"></i> Book Table
+                        </label>
+                        <div class="toggle-group">
+                            <label class="toggle-option">
+                                <input type="radio" name="book_table" value="Yes"
+                                    {% if form_data and form_data.book_table == 'Yes' %}checked{% endif %}
+                                    required />
+                                <span class="toggle-btn">Yes</span>
+                            </label>
+                            <label class="toggle-option">
+                                <input type="radio" name="book_table" value="No"
+                                    {% if form_data and form_data.book_table == 'No' %}checked{% endif %} />
+                                <span class="toggle-btn">No</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ─── Row 2: Numeric inputs ─────────────────────────────── -->
+                <div class="form-row">
+                    <div class="form-group" id="group-votes">
+                        <label for="votes" class="form-label">
+                            <i class="fas fa-thumbs-up"></i> Votes
+                        </label>
+                        <input type="number" name="votes" id="votes" class="form-input"
+                               placeholder="e.g. 500" min="0"
+                               value="{{ form_data.votes if form_data else '' }}" required />
+                        <span class="form-hint">Total number of votes received</span>
+                    </div>
+
+                    <div class="form-group" id="group-cost">
+                        <label for="cost" class="form-label">
+                            <i class="fas fa-rupee-sign"></i> Approx Cost (for two)
+                        </label>
+                        <input type="number" name="cost" id="cost" class="form-input"
+                               placeholder="e.g. 800" min="1" step="1"
+                               value="{{ form_data.cost if form_data else '' }}" required />
+                        <span class="form-hint">Approximate cost for two people in ₹</span>
+                    </div>
+                </div>
+
+                <!-- ─── Row 3: Location & City ────────────────────────────── -->
+                <div class="form-row">
+                    <div class="form-group" id="group-location">
+                        <label for="location" class="form-label">
+                            <i class="fas fa-map-marker-alt"></i> Location
+                        </label>
+                        <div class="select-wrapper">
+                            <select name="location" id="location" class="form-select" required>
+                                <option value="" disabled {% if not form_data or not form_data.location %}selected{% endif %}>Select Location</option>
+                                {% for loc in dropdowns.location %}
+                                <option value="{{ loc }}" {% if form_data and form_data.location == loc %}selected{% endif %}>{{ loc }}</option>
+                                {% endfor %}
+                            </select>
+                            <i class="fas fa-chevron-down select-arrow"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="group-city">
+                        <label for="city" class="form-label">
+                            <i class="fas fa-city"></i> City Area
+                        </label>
+                        <div class="select-wrapper">
+                            <select name="city" id="city" class="form-select" required>
+                                <option value="" disabled {% if not form_data or not form_data.city %}selected{% endif %}>Select City Area</option>
+                                {% for c in dropdowns.city %}
+                                <option value="{{ c }}" {% if form_data and form_data.city == c %}selected{% endif %}>{{ c }}</option>
+                                {% endfor %}
+                            </select>
+                            <i class="fas fa-chevron-down select-arrow"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ─── Row 4: Restaurant Type & Service Type ─────────────── -->
+                <div class="form-row">
+                    <div class="form-group" id="group-rest-type">
+                        <label for="rest_type" class="form-label">
+                            <i class="fas fa-store"></i> Restaurant Type
+                        </label>
+                        <div class="select-wrapper">
+                            <select name="rest_type" id="rest_type" class="form-select" required>
+                                <option value="" disabled {% if not form_data or not form_data.rest_type %}selected{% endif %}>Select Restaurant Type</option>
+                                {% for rt in dropdowns.rest_type %}
+                                <option value="{{ rt }}" {% if form_data and form_data.rest_type == rt %}selected{% endif %}>{{ rt }}</option>
+                                {% endfor %}
+                            </select>
+                            <i class="fas fa-chevron-down select-arrow"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="group-type">
+                        <label for="type" class="form-label">
+                            <i class="fas fa-concierge-bell"></i> Service Type
+                        </label>
+                        <div class="select-wrapper">
+                            <select name="type" id="type" class="form-select" required>
+                                <option value="" disabled {% if not form_data or not form_data.type %}selected{% endif %}>Select Service Type</option>
+                                {% for t in dropdowns.type %}
+                                <option value="{{ t }}" {% if form_data and form_data.type == t %}selected{% endif %}>{{ t }}</option>
+                                {% endfor %}
+                            </select>
+                            <i class="fas fa-chevron-down select-arrow"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ─── Row 5: Cuisines (full width) ──────────────────────── -->
+                <div class="form-row form-row-full">
+                    <div class="form-group" id="group-cuisines">
+                        <label for="cuisines" class="form-label">
+                            <i class="fas fa-utensils"></i> Cuisines
+                        </label>
+                        <div class="select-wrapper">
+                            <select name="cuisines" id="cuisines" class="form-select" required>
+                                <option value="" disabled {% if not form_data or not form_data.cuisines %}selected{% endif %}>Select Cuisine(s)</option>
+                                {% for cuisine in dropdowns.cuisines %}
+                                <option value="{{ cuisine }}" {% if form_data and form_data.cuisines == cuisine %}selected{% endif %}>{{ cuisine }}</option>
+                                {% endfor %}
+                            </select>
+                            <i class="fas fa-chevron-down select-arrow"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ─── Submit ────────────────────────────────────────────── -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-lg btn-submit" id="btn-predict">
+                        <span class="btn-text">
+                            <i class="fas fa-magic"></i> Predict Rating
+                        </span>
+                        <span class="btn-loader" style="display:none;">
+                            <span class="spinner"></span> Predicting...
+                        </span>
+                    </button>
+                    <button type="reset" class="btn btn-outline btn-lg" id="btn-reset">
+                        <i class="fas fa-redo"></i> Reset
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

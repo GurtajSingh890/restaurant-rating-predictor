@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}About | Bengaluru Restaurant Rating Predictor{% endblock %}
+{% block meta_description %}Learn about the Bengaluru Restaurant Rating Predictor — project overview, dataset, Random Forest Regression model, and technologies used.{% endblock %}
+
+{% block content %}
+<section class="about-section" id="about-section">
+    <div class="section-container">
+
+        <!-- ─── Hero ──────────────────────────────────────────────────── -->
+        <div class="section-header fade-in">
+            <span class="section-badge"><i class="fas fa-info-circle"></i> Learn More</span>
+            <h1 class="section-title">About This Project</h1>
+            <p class="section-subtitle">
+                A deep dive into the data, model, and technology behind our
+                restaurant rating predictor.
+            </p>
+        </div>
+
+        <!-- ─── Project Overview ──────────────────────────────────────── -->
+        <div class="about-card glass-card fade-in" id="about-overview">
+            <div class="about-card-icon">
+                <i class="fas fa-bullseye"></i>
+            </div>
+            <h2>Project Overview</h2>
+            <p>
+                The <strong>Bengaluru Restaurant Rating Predictor</strong> is a
+                machine learning project that predicts the Zomato rating of a
+                restaurant in Bengaluru based on key attributes such as location,
+                cuisine type, cost, service type, and more.
+            </p>
+            <p>
+                This tool helps restaurant owners, food enthusiasts, and data
+                science learners understand the factors that influence restaurant
+                ratings in one of India's most vibrant food cities.
+            </p>
+        </div>
+
+        <!-- ─── The Dataset ───────────────────────────────────────────── -->
+        <div class="about-card glass-card fade-in" id="about-dataset">
+            <div class="about-card-icon">
+                <i class="fas fa-database"></i>
+            </div>
+            <h2>The Dataset</h2>
+            <p>
+                We used the <strong>Zomato Bengaluru Restaurant Dataset</strong>,
+                which contains information about 50,000+ restaurants across
+                Bengaluru. Key features include:
+            </p>
+            <div class="about-features-list">
+                <div class="about-feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Online Order</strong> — Whether the restaurant accepts online orders</span>
+                </div>
+                <div class="about-feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Book Table</strong> — Whether table booking is available</span>
+                </div>
+                <div class="about-feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Votes</strong> — Total number of user votes</span>
+                </div>
+                <div class="about-feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Location</strong> — Specific neighborhood in Bengaluru</span>
+                </div>
+                <div class="about-feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Restaurant Type</strong> — Casual Dining, Café, Quick Bites, etc.</span>
+                </div>
+                <div class="about-feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Cuisines</strong> — Cuisine combinations served</span>
+                </div>
+                <div class="about-feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Cost for Two</strong> — Approximate meal cost for two people</span>
+                </div>
+                <div class="about-feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Service Type</strong> — Buffet, Delivery, Dine-out, etc.</span>
+                </div>
+                <div class="about-feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>City Area</strong> — Broader city zone designation</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── The Model ─────────────────────────────────────────────── -->
+        <div class="about-card glass-card fade-in" id="about-model">
+            <div class="about-card-icon">
+                <i class="fas fa-project-diagram"></i>
+            </div>
+            <h2>Random Forest Regression</h2>
+            <p>
+                The model uses <strong>Random Forest Regression</strong>, an
+                ensemble learning method that constructs multiple decision trees
+                during training and outputs the average prediction.
+            </p>
+            <div class="about-grid-2">
+                <div class="about-mini-card">
+                    <h4><i class="fas fa-shield-alt"></i> Robust</h4>
+                    <p>Resistant to overfitting due to ensemble averaging across hundreds of decision trees.</p>
+                </div>
+                <div class="about-mini-card">
+                    <h4><i class="fas fa-balance-scale"></i> Accurate</h4>
+                    <p>Handles non-linear relationships and feature interactions without explicit specification.</p>
+                </div>
+                <div class="about-mini-card">
+                    <h4><i class="fas fa-columns"></i> Feature Handling</h4>
+                    <p>Works with both numerical and encoded categorical variables seamlessly.</p>
+                </div>
+                <div class="about-mini-card">
+                    <h4><i class="fas fa-tachometer-alt"></i> Fast Inference</h4>
+                    <p>Once trained, predictions are generated in milliseconds — perfect for web apps.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── Flask & Technologies ──────────────────────────────────── -->
+        <div class="about-card glass-card fade-in" id="about-tech">
+            <div class="about-card-icon">
+                <i class="fas fa-code"></i>
+            </div>
+            <h2>Technologies Used</h2>
+            <div class="tech-grid">
+                <div class="tech-item">
+                    <div class="tech-icon"><i class="fab fa-python"></i></div>
+                    <h4>Python</h4>
+                    <p>Core programming language for ML and backend</p>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon"><i class="fas fa-flask"></i></div>
+                    <h4>Flask</h4>
+                    <p>Lightweight web framework for serving the application</p>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon"><i class="fas fa-brain"></i></div>
+                    <h4>Scikit-learn</h4>
+                    <p>Machine Learning library for model training and encoding</p>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon"><i class="fab fa-html5"></i></div>
+                    <h4>HTML5</h4>
+                    <p>Semantic markup for structured page content</p>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon"><i class="fab fa-css3-alt"></i></div>
+                    <h4>CSS3</h4>
+                    <p>Modern styling with animations and responsiveness</p>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon"><i class="fab fa-js-square"></i></div>
+                    <h4>JavaScript</h4>
+                    <p>Interactive elements, validation, and dynamic behavior</p>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon"><i class="fas fa-file-code"></i></div>
+                    <h4>Jinja2</h4>
+                    <p>Templating engine for server-side rendering</p>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon"><i class="fas fa-save"></i></div>
+                    <h4>Joblib</h4>
+                    <p>Efficient serialization for ML model persistence</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── CTA ───────────────────────────────────────────────────── -->
+        <div class="about-cta fade-in">
+            <a href="{{ url_for('predict') }}" class="btn btn-primary btn-lg" id="about-cta-predict">
+                <i class="fas fa-star"></i> Try Prediction Now
+            </a>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Home | Bengaluru Restaurant Rating Predictor{% endblock %}
+{% block meta_description %}Predict Bengaluru restaurant ratings instantly using our ML-powered tool. Built with Random Forest Regression on Zomato data.{% endblock %}
+
+{% block content %}
+<!-- ─── Hero Section ──────────────────────────────────────────────── -->
+<section class="hero" id="hero-section">
+    <div class="hero-bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <div class="hero-container">
+        <div class="hero-content fade-in">
+            <span class="hero-badge">
+                <i class="fas fa-robot"></i> ML Powered
+            </span>
+            <h1 class="hero-title">
+                Bengaluru<br />
+                <span class="highlight">Restaurant Rating</span><br />
+                Predictor
+            </h1>
+            <p class="hero-description">
+                Leverage the power of Machine Learning to predict restaurant ratings
+                in Bengaluru. Our Random Forest Regression model, trained on real
+                Zomato data, delivers instant and accurate predictions.
+            </p>
+            <div class="hero-actions">
+                <a href="{{ url_for('predict') }}" class="btn btn-primary btn-lg" id="cta-predict">
+                    <i class="fas fa-star"></i> Predict Rating
+                </a>
+                <a href="{{ url_for('about') }}" class="btn btn-outline btn-lg" id="cta-about">
+                    Learn More <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="stat-number">50K+</span>
+                    <span class="stat-label">Data Points</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">92+</span>
+                    <span class="stat-label">Locations</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">RF</span>
+                    <span class="stat-label">Model</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-visual fade-in-right">
+            <div class="hero-card glass-card">
+                <div class="card-icon-wrap">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3>Sample Prediction</h3>
+                <div class="sample-rating">
+                    <span class="sample-stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                    </span>
+                    <span class="sample-value">4.2 / 5</span>
+                </div>
+                <p class="card-sub">Koramangala • Casual Dining</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── Feature Cards ─────────────────────────────────────────────── -->
+<section class="features" id="features-section">
+    <div class="section-container">
+        <div class="section-header fade-in">
+            <span class="section-badge">Why Choose Us</span>
+            <h2 class="section-title">Powered by Advanced ML</h2>
+            <p class="section-subtitle">
+                Our prediction engine combines data science best practices with
+                a battle-tested Random Forest model.
+            </p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card fade-in" id="feature-ml">
+                <div class="feature-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h3 class="feature-title">Machine Learning</h3>
+                <p class="feature-desc">
+                    Built using industry-standard scikit-learn with careful
+                    feature engineering and hyperparameter tuning.
+                </p>
+            </div>
+
+            <div class="feature-card fade-in" id="feature-rf">
+                <div class="feature-icon">
+                    <i class="fas fa-tree"></i>
+                </div>
+                <h3 class="feature-title">Random Forest Model</h3>
+                <p class="feature-desc">
+                    An ensemble of decision trees for robust, accurate
+                    regression — minimizing overfitting and variance.
+                </p>
+            </div>
+
+            <div class="feature-card fade-in" id="feature-data">
+                <div class="feature-icon">
+                    <i class="fas fa-database"></i>
+                </div>
+                <h3 class="feature-title">Bengaluru Dataset</h3>
+                <p class="feature-desc">
+                    Trained on comprehensive Zomato data covering 50,000+
+                    restaurants across 92+ neighborhoods in Bengaluru.
+                </p>
+            </div>
+
+            <div class="feature-card fade-in" id="feature-instant">
+                <div class="feature-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h3 class="feature-title">Instant Predictions</h3>
+                <p class="feature-desc">
+                    Get your predicted rating in under a second. Just fill
+                    in the restaurant details and hit predict.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── How It Works ──────────────────────────────────────────────── -->
+<section class="how-it-works" id="how-section">
+    <div class="section-container">
+        <div class="section-header fade-in">
+            <span class="section-badge">Simple Process</span>
+            <h2 class="section-title">How It Works</h2>
+        </div>
+
+        <div class="steps-grid">
+            <div class="step-card fade-in" id="step-1">
+                <div class="step-number">01</div>
+                <div class="step-icon"><i class="fas fa-edit"></i></div>
+                <h3>Enter Details</h3>
+                <p>Fill in restaurant attributes like location, cuisine, cost, and more.</p>
+            </div>
+
+            <div class="step-connector fade-in">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+
+            <div class="step-card fade-in" id="step-2">
+                <div class="step-number">02</div>
+                <div class="step-icon"><i class="fas fa-cogs"></i></div>
+                <h3>ML Processing</h3>
+                <p>Our Random Forest model processes your input through its trained pipeline.</p>
+            </div>
+
+            <div class="step-connector fade-in">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+
+            <div class="step-card fade-in" id="step-3">
+                <div class="step-number">03</div>
+                <div class="step-icon"><i class="fas fa-star"></i></div>
+                <h3>Get Rating</h3>
+                <p>Receive an accurate predicted rating on a 5-star scale instantly.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── CTA Section ───────────────────────────────────────────────── -->
+<section class="cta-section" id="cta-section">
+    <div class="section-container">
+        <div class="cta-card glass-card fade-in">
+            <h2>Ready to Predict a Rating?</h2>
+            <p>Try our ML-powered prediction engine now — it's fast, free, and accurate.</p>
+            <a href="{{ url_for('predict') }}" class="btn btn-primary btn-lg" id="cta-bottom">
+                <i class="fas fa-rocket"></i> Get Started
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

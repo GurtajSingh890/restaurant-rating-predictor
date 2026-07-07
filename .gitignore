@@ -1,0 +1,61 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment variables
+.env
+
+# Flask stuff
+instance/
+.webassets-cache
+.flaskenv
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Datasets / Large files not to be pushed
+zomato-*.csv
+*.zip
+
+# Ignore specific large model files in git if utilizing Git LFS, or ignore if they shouldn't be pushed.
+# However, for this project, the user implies the model files should be deployed together. 
+# We'll leave them tracked unless otherwise specified, but generally .joblib can be large.
+# *.joblib

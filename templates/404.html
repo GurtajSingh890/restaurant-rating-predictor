@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}{{ error_code | default(404) }} | Page Not Found{% endblock %}
+{% block meta_description %}The page you're looking for doesn't exist.{% endblock %}
+
+{% block content %}
+<section class="error-section" id="error-section">
+    <div class="section-container">
+        <div class="error-card glass-card fade-in" id="error-card">
+            <div class="error-code">{{ error_code | default(404) }}</div>
+            <div class="error-icon">
+                <i class="fas fa-map-signs"></i>
+            </div>
+            <h1 class="error-title">{{ error_message | default("Page Not Found") }}</h1>
+            <p class="error-desc">
+                Oops! The page you're looking for doesn't exist or has been moved.
+                Let's get you back on track.
+            </p>
+            <div class="error-actions">
+                <a href="{{ url_for('home') }}" class="btn btn-primary btn-lg" id="error-home">
+                    <i class="fas fa-home"></i> Go Home
+                </a>
+                <a href="{{ url_for('predict') }}" class="btn btn-outline btn-lg" id="error-predict">
+                    <i class="fas fa-star"></i> Predict Rating
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
