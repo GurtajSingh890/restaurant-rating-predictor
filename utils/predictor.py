@@ -2,136 +2,260 @@
 Predictor module for restaurant rating prediction.
 
 Loads the trained Random Forest model and OrdinalEncoder once,
-preprocesses input data, and returns predictions.
+validates inputs/dropdown schemas, preprocesses data, and outputs predictions.
 """
 
-import os
 import json
-import numpy as np
+import logging
+import os
+import threading
+from typing import Any, Dict, List, Optional
+
 import joblib
+import numpy as np
+from sklearn.ensemble import RandomForestRegressor  # For type hinting
+from sklearn.preprocessing import OrdinalEncoder  # For type hinting
+
+logger = logging.getLogger(__name__)
+
+# Constants
+MIN_RATING: float = 1.0
+MAX_RATING: float = 5.0
+DECIMAL_PLACES: int = 1
+
+# Features expected by model/encoder
+CATEGORICAL_FEATURES: List[str] = [
+    "location",
+    "rest_type",
+    "cuisines",
+    "type",
+    "city",
+]
+
+# Base paths calculation for fallback/standalone usages
+BASE_DIR: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DEFAULT_MODEL_PATH: str = os.path.join(
+    BASE_DIR, "model", "restaurant_rf_model.joblib"
+)
+DEFAULT_ENCODER_PATH: str = os.path.join(
+    BASE_DIR, "model", "categorical_encoder.joblib"
+)
+DEFAULT_DROPDOWNS_PATH: str = os.path.join(
+    BASE_DIR, "model", "ui_dropdowns.json"
+)
 
 
-# ── Paths ────────────────────────────────────────────────────────────────
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODEL_DIR = os.path.join(BASE_DIR, "model")
-
-MODEL_PATH = os.path.join(MODEL_DIR, "restaurant_rf_model.joblib")
-ENCODER_PATH = os.path.join(MODEL_DIR, "categorical_encoder.joblib")
-DROPDOWNS_PATH = os.path.join(MODEL_DIR, "ui_dropdowns.json")
-
-
-# ── Singleton loader ─────────────────────────────────────────────────────
-_model = None
-_encoder = None
-_dropdowns = None
-
-
-def _load_model():
-    """Load the Random Forest model (once)."""
-    global _model
-    if _model is None:
-        _model = joblib.load(MODEL_PATH)
-    return _model
-
-
-def _load_encoder():
-    """Load the OrdinalEncoder (once)."""
-    global _encoder
-    if _encoder is None:
-        _encoder = joblib.load(ENCODER_PATH)
-    return _encoder
-
-
-def load_dropdowns():
+def _get_config_path(key: str, default: str) -> str:
     """
-    Load dropdown options from ui_dropdowns.json.
-
-    Returns
-    -------
-    dict
-        Keys: location, rest_type, cuisines, type, city
-        Values: sorted list of string options
+    Retrieve filepath from current_app config or default if outside context.
     """
-    global _dropdowns
-    if _dropdowns is None:
-        with open(DROPDOWNS_PATH, "r", encoding="utf-8") as fh:
-            _dropdowns = json.load(fh)
-    return _dropdowns
+    try:
+        from flask import current_app
+
+        if current_app:
+            return current_app.config[key]
+    except (RuntimeError, KeyError):
+        pass
+    return os.environ.get(key, default)
 
 
-def preprocess_and_predict(form_data: dict) -> float:
+def validate_dropdowns(data: Any) -> None:
     """
-    Preprocess user form data and return predicted rating.
-
-    Expected form_data keys
-    -----------------------
-    online_order : str   ("Yes" / "No")
-    book_table   : str   ("Yes" / "No")
-    votes        : str   (integer string)
-    cost         : str   (numeric string – approx cost for two)
-    location     : str   (from dropdown)
-    rest_type    : str   (from dropdown)
-    cuisines     : str   (from dropdown)
-    type         : str   (from dropdown)
-    city         : str   (from dropdown)
-
-    The model expects 9 features in the following order:
-        online_order, book_table, votes, location, rest_type,
-        cuisines, cost, type, city
-
-    Categorical features (location, rest_type, cuisines, type, city)
-    are encoded via the OrdinalEncoder that was fitted during training.
-    online_order and book_table are mapped to 1/0.
-    votes and cost are passed as numeric values.
-
-    Returns
-    -------
-    float
-        Predicted rating rounded to 1 decimal place, clamped to [1.0, 5.0].
+    Validate the schema structure of the dropdown options dictionary.
     """
-    model = _load_model()
-    encoder = _load_encoder()
+    if not isinstance(data, dict):
+        raise TypeError("Dropdown data must be a dictionary.")
 
-    # ── Binary features ─────────────────────────────────────────────────
-    online_order = 1 if form_data.get("online_order", "No") == "Yes" else 0
-    book_table = 1 if form_data.get("book_table", "No") == "Yes" else 0
+    for field in CATEGORICAL_FEATURES:
+        if field not in data:
+            raise ValueError(f"Missing required dropdown field: '{field}'")
+        if not isinstance(data[field], list):
+            raise TypeError(
+                f"Dropdown field '{field}' must map to a list of options."
+            )
+        if not all(isinstance(item, str) for item in data[field]):
+            raise ValueError(
+                f"All options in '{field}' dropdown must be strings."
+            )
 
-    # ── Numeric features ────────────────────────────────────────────────
-    votes = int(form_data.get("votes", 0))
-    cost = float(form_data.get("cost", 0))
 
-    # ── Categorical features ────────────────────────────────────────────
-    # Encoder expects shape (1, 5) for columns:
-    #   location, rest_type, cuisines, type, city
-    cat_values = np.array([[
-        form_data.get("location", ""),
-        form_data.get("rest_type", ""),
-        form_data.get("cuisines", ""),
-        form_data.get("type", ""),
-        form_data.get("city", ""),
-    ]])
+class ModelLoader:
+    """Thread-safe Singleton class loader for machine learning models and configurations."""
 
-    cat_encoded = encoder.transform(cat_values)  # shape (1, 5)
+    _model: Optional[RandomForestRegressor] = None
+    _encoder: Optional[OrdinalEncoder] = None
+    _dropdowns: Optional[Dict[str, List[str]]] = None
+    _lock: threading.Lock = threading.Lock()
 
-    # ── Assemble feature vector ─────────────────────────────────────────
-    # Model feature order:
-    #   online_order, book_table, votes, location, rest_type,
-    #   cuisines, cost, type, city
-    features = np.array([[
-        online_order,
-        book_table,
-        votes,
-        cat_encoded[0, 0],   # location
-        cat_encoded[0, 1],   # rest_type
-        cat_encoded[0, 2],   # cuisines
-        cost,
-        cat_encoded[0, 3],   # type
-        cat_encoded[0, 4],   # city
-    ]])
+    @classmethod
+    def load_model(cls, path: Optional[str] = None) -> RandomForestRegressor:
+        if cls._model is None:
+            with cls._lock:
+                if cls._model is None:
+                    target_path = path or _get_config_path(
+                        "MODEL_PATH", DEFAULT_MODEL_PATH
+                    )
+                    logger.info("Loading ML Model from: %s", target_path)
+                    try:
+                        cls._model = joblib.load(target_path)
+                    except Exception as exc:
+                        logger.error(
+                            "Failed to load ML Model from %s: %s",
+                            target_path,
+                            exc,
+                        )
+                        raise
+        return cls._model
 
-    prediction = model.predict(features)[0]
+    @classmethod
+    def load_encoder(cls, path: Optional[str] = None) -> OrdinalEncoder:
+        if cls._encoder is None:
+            with cls._lock:
+                if cls._encoder is None:
+                    target_path = path or _get_config_path(
+                        "ENCODER_PATH", DEFAULT_ENCODER_PATH
+                    )
+                    logger.info("Loading Ordinal Encoder from: %s", target_path)
+                    try:
+                        cls._encoder = joblib.load(target_path)
+                    except Exception as exc:
+                        logger.error(
+                            "Failed to load Encoder from %s: %s",
+                            target_path,
+                            exc,
+                        )
+                        raise
+        return cls._encoder
 
-    # Clamp between 1.0 and 5.0 and round
-    prediction = round(float(np.clip(prediction, 1.0, 5.0)), 1)
+    @classmethod
+    def load_dropdowns(cls, path: Optional[str] = None) -> Dict[str, List[str]]:
+        if cls._dropdowns is None:
+            with cls._lock:
+                if cls._dropdowns is None:
+                    target_path = path or _get_config_path(
+                        "DROPDOWNS_PATH", DEFAULT_DROPDOWNS_PATH
+                    )
+                    logger.info(
+                        "Loading and validating dropdowns from: %s",
+                        target_path,
+                    )
+                    try:
+                        with open(target_path, "r", encoding="utf-8") as fh:
+                            data = json.load(fh)
+                        validate_dropdowns(data)
+                        cls._dropdowns = data
+                    except Exception as exc:
+                        logger.error(
+                            "Failed to load/validate dropdown options from %s: %s",
+                            target_path,
+                            exc,
+                        )
+                        raise
+        return cls._dropdowns
+
+
+# ── Module-Level Wrapper Functions for External Imports ─────────────────
+
+def load_dropdowns(path: Optional[str] = None) -> Dict[str, List[str]]:
+    """Exposes dropdown loading to app.py at the module level."""
+    return ModelLoader.load_dropdowns(path)
+
+
+def preprocess_and_predict(form_data: Dict[str, str]) -> float:
+    """
+    Preprocess user form data, encode categorical variables, and return predictions.
+    """
+    model = ModelLoader.load_model()
+    encoder = ModelLoader.load_encoder()
+
+    # Binary features mapping
+    online_order: int = (
+        1 if form_data.get("online_order", "No") == "Yes" else 0
+    )
+    book_table: int = 1 if form_data.get("book_table", "No") == "Yes" else 0
+
+    # Safe Numeric Conversion
+    votes: int = 0
+    raw_votes = form_data.get("votes", "0")
+    try:
+        votes = int(raw_votes)
+    except (ValueError, TypeError) as exc:
+        logger.warning(
+            "Numeric parsing failure for 'votes' value: %s. Defaulting to 0. Error: %s",
+            raw_votes,
+            exc,
+        )
+
+    cost: float = 0.0
+    raw_cost = form_data.get("cost", "0.0")
+    try:
+        cost = float(raw_cost)
+    except (ValueError, TypeError) as exc:
+        logger.warning(
+            "Numeric parsing failure for 'cost' value: %s. Defaulting to 0.0. Error: %s",
+            raw_cost,
+            exc,
+        )
+
+    # Categorical features
+    cat_values = np.array(
+        [
+            [
+                form_data.get("location", ""),
+                form_data.get("rest_type", ""),
+                form_data.get("cuisines", ""),
+                form_data.get("type", ""),
+                form_data.get("city", ""),
+            ]
+        ]
+    )
+
+    try:
+        cat_encoded = encoder.transform(cat_values)
+    except Exception as exc:
+        logger.error(
+            "Encoding failed for categorical values: %s. Error: %s",
+            cat_values,
+            exc,
+        )
+        raise
+
+    # Assemble feature vector
+    features = np.array(
+        [
+            [
+                online_order,
+                book_table,
+                votes,
+                cat_encoded[0, 0],  # location
+                cat_encoded[0, 1],  # rest_type
+                cat_encoded[0, 2],  # cuisines
+                cost,
+                cat_encoded[0, 3],  # type
+                cat_encoded[0, 4],  # city
+            ]
+        ]
+    )
+
+    # Run Prediction
+    raw_prediction = model.predict(features)[0]
+
+    # Clamp and round predicted score
+    prediction = round(
+        float(np.clip(raw_prediction, MIN_RATING, MAX_RATING)),
+        DECIMAL_PLACES,
+    )
 
     return prediction
+
+
+# ── Backwards Compatibility Aliases for Legacy app.py Imports ───────────
+
+def _load_model(path: Optional[str] = None) -> RandomForestRegressor:
+    """Alias pointing to the thread-safe ModelLoader to satisfy app.py."""
+    return ModelLoader.load_model(path)
+
+
+def _load_encoder(path: Optional[str] = None) -> OrdinalEncoder:
+    """Alias pointing to the thread-safe ModelLoader to satisfy app.py."""
+    return ModelLoader.load_encoder(path)
